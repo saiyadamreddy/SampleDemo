@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SampleDemo</string>
+    <string name="app_name">GoPetting</string>
     <string name="action_settings">Settings</string>
     <!-- Button labels -->
     <string name="sign_out">Sign Out</string>
