@@ -1,7 +1,6 @@
 package com.sample.demo.adapter;
 
 import android.content.Context;
-import android.os.Vibrator;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,24 +24,10 @@ public class BookListAdapter extends
         ItemTouchHelperAdapter {
 
     private List<Books> productList = new ArrayList<Books>();
-    private OnItemClickListener clickListener;
-
     private Context context;
 
-    public BookListAdapter(String subcategoryKey, Context context,
-                              boolean isCartlist) {
-
-        if (isCartlist) {
-
-            productList = GlobaDataHolder.getGlobaDataHolder()
-                    .getShoppingList();
-
-        } else {
-
-            productList = GlobaDataHolder.getGlobaDataHolder().getProductMap()
-                    .get(subcategoryKey);
-        }
-
+    public BookListAdapter(List<Books> productList, Context context) {
+        this.productList = productList;
         this.context = context;
     }
 
@@ -60,11 +45,11 @@ public class BookListAdapter extends
 
         holder.itemName.setText(productList.get(position).name);
 
-        holder.itemDesc.setText(productList.get(position).startDate);
+        holder.startDate.setText(productList.get(position).startDate);
 
-        holder.itemCost.setText(productList.get(position).endDate);
+        holder.endDate.setText(productList.get(position).endDate);
 
-        Glide.with(context).load(productList.get(position).url).placeholder(R.drawable.common_ic_googleplayservices)
+        Glide.with(context).load(productList.get(position).icon).placeholder(R.drawable.common_ic_googleplayservices)
                 .error(R.drawable.common_ic_googleplayservices).centerCrop().into(holder.imagView);
 
         holder.addItem.findViewById(R.id.add_item).setOnClickListener(
@@ -72,31 +57,15 @@ public class BookListAdapter extends
 
                     @Override
                     public void onClick(View v) {
-
-
                         //current object
                         Books tempObj = productList.get(position);
-
-
                         //if current object is lready in shopping list
                         if (GlobaDataHolder.getGlobaDataHolder()
                                 .getShoppingList().contains(tempObj)) {
-
-
                             //get position of current item in shopping list
                             int indexOfTempInShopingList = GlobaDataHolder
                                     .getGlobaDataHolder().getShoppingList()
                                     .indexOf(tempObj);
-
-                            // increase quantity of current item in shopping list
-                            if (Integer.parseInt(tempObj.getQuantity()) == 0) {
-
-//								((ECartHomeActivity) getContext())
-//										.updateItemCount(true);
-
-                            }
-
-
                             // update quanity in shopping list
                             GlobaDataHolder
                                     .getGlobaDataHolder()
@@ -106,49 +75,28 @@ public class BookListAdapter extends
                                             String.valueOf(Integer
                                                     .valueOf(tempObj
                                                             .getQuantity()) + 1));
-
-
-                            ;
-
                             // update current item quanitity
                             holder.quanitity.setText(tempObj.getQuantity());
-
                         } else {
-
-                            //((ECartHomeActivity) getContext()).updateItemCount(true);
-
                             tempObj.setQuantity(String.valueOf(1));
-
                             holder.quanitity.setText(tempObj.getQuantity());
-
                             GlobaDataHolder.getGlobaDataHolder()
                                     .getShoppingList().add(tempObj);
-
-
                         }
-
-                        ((Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE))
-                                .vibrate(100);
-
                     }
                 });
-
         holder.removeItem.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
 
                 Books tempObj = (productList).get(position);
-
                 if (GlobaDataHolder.getGlobaDataHolder().getShoppingList()
                         .contains(tempObj)) {
-
                     int indexOfTempInShopingList = GlobaDataHolder
                             .getGlobaDataHolder().getShoppingList()
                             .indexOf(tempObj);
-
                     if (Integer.valueOf(tempObj.getQuantity()) != 0) {
-
                         GlobaDataHolder
                                 .getGlobaDataHolder()
                                 .getShoppingList()
@@ -156,42 +104,22 @@ public class BookListAdapter extends
                                 .setQuantity(
                                         String.valueOf(Integer.valueOf(tempObj
                                                 .getQuantity()) - 1));
-
-
                         holder.quanitity.setText(GlobaDataHolder
                                 .getGlobaDataHolder().getShoppingList()
                                 .get(indexOfTempInShopingList).getQuantity());
-
-                        ((Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE))
-                                .vibrate(100);
-
                         if (Integer.valueOf(GlobaDataHolder
                                 .getGlobaDataHolder().getShoppingList()
                                 .get(indexOfTempInShopingList).getQuantity()) == 0) {
-
                             GlobaDataHolder.getGlobaDataHolder()
                                     .getShoppingList()
                                     .remove(indexOfTempInShopingList);
-
                             notifyDataSetChanged();
-
-//							((ECartHomeActivity) getContext())
-//									.updateItemCount(false);
-
                         }
-
                     }
-
-                } else {
-
                 }
-
             }
-
         });
-
     }
-
 
     @Override
     public int getItemCount() {
@@ -200,7 +128,7 @@ public class BookListAdapter extends
 
     class VersionViewHolder extends RecyclerView.ViewHolder implements
             OnClickListener {
-        TextView itemName, itemDesc, itemCost, availability, quanitity,
+        TextView itemName, startDate, endDate, availability, quanitity,
                 addItem, removeItem;
         ImageView imagView;
 
@@ -209,10 +137,9 @@ public class BookListAdapter extends
 
             itemName = (TextView) itemView.findViewById(R.id.item_name);
 
-            itemDesc = (TextView) itemView.findViewById(R.id.item_short_desc);
+            startDate = (TextView) itemView.findViewById(R.id.item_short_desc);
 
-            itemCost = (TextView) itemView.findViewById(R.id.item_price);
-
+            endDate = (TextView) itemView.findViewById(R.id.item_price);
 
             quanitity = (TextView) itemView.findViewById(R.id.iteam_amount);
 
@@ -226,22 +153,15 @@ public class BookListAdapter extends
 
             itemView.setOnClickListener(this);
 
-
         }
 
         @Override
         public void onClick(View v) {
-            clickListener.onItemClick(v, getPosition());
         }
     }
 
     public interface OnItemClickListener {
         public void onItemClick(View view, int position);
-    }
-
-    public void SetOnItemClickListener(
-            final OnItemClickListener itemClickListener) {
-        this.clickListener = itemClickListener;
     }
 
     @Override

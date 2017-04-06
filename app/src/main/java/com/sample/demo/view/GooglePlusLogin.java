@@ -95,12 +95,10 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
     @Override
     public void onConnected(Bundle arg0) {
         signedInUser = false;
-        Toast.makeText(this, "Connected", Toast.LENGTH_LONG).show();
         Intent intent = new Intent(GooglePlusLogin.this, BookListView.class);
         startActivity(intent);
         finish();
     }
-
 
     @Override
     public void onConnectionSuspended(int cause) {

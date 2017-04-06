@@ -20,9 +20,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 
-/**
- * Created by 472977 on 4/5/2017.
- */
+
 
 public class ServiceWorker {
 
