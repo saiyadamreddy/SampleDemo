@@ -1,9 +1,12 @@
 package com.sample.demo.view;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
@@ -16,6 +19,15 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.plus.Plus;
 import com.sample.demo.R;
+import com.sample.demo.modal.ServiceDataModal;
+import com.sample.demo.presenter.BookListPresenter;
+
+import java.util.concurrent.Callable;
+
+import rx.Observable;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class GooglePlusLogin extends Activity implements OnClickListener, ConnectionCallbacks, OnConnectionFailedListener {
 
@@ -27,21 +39,24 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
     private boolean signedInUser;
     private ConnectionResult mConnectionResult;
     private SignInButton signinButton;
+    private ProgressDialog progressDialog;
 
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signin);
         signinButton = (SignInButton) findViewById(R.id.sign_in_button);
         signinButton.setOnClickListener(this);
-
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Please wait..");
+        progressDialog.show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(Plus.API, Plus.PlusOptions.builder().build()).addScope(Plus.SCOPE_PLUS_LOGIN).build();
-        mGoogleApiClient.connect();
+        connectToGooglePlus(progressDialog);
     }
 
     protected void onStop() {
@@ -75,6 +90,9 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
                 resolveSignInError();
             }
         }
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
     }
 
     @Override
@@ -85,8 +103,11 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
                     signedInUser = false;
                 }
                 mIntentInProgress = false;
-                mGoogleApiClient.connect();
                 if (!mGoogleApiClient.isConnecting()) {
+                    if (progressDialog != null && !progressDialog.isShowing()) {
+                        progressDialog.show();
+                    }
+                    mGoogleApiClient.connect();
                 }
                 break;
         }
@@ -95,6 +116,9 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
     @Override
     public void onConnected(Bundle arg0) {
         signedInUser = false;
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
         Intent intent = new Intent(GooglePlusLogin.this, BookListView.class);
         startActivity(intent);
         finish();
@@ -102,6 +126,9 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
 
     @Override
     public void onConnectionSuspended(int cause) {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
         mGoogleApiClient.connect();
         Intent intent = new Intent(GooglePlusLogin.this, BookListView.class);
         startActivity(intent);
@@ -117,13 +144,6 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
         }
     }
 
-    public void signIn(View v) {
-        googlePlusLogin();
-    }
-
-    public void logout(View v) {
-        googlePlusLogout();
-    }
 
     private void googlePlusLogin() {
         if (!mGoogleApiClient.isConnecting()) {
@@ -138,4 +158,41 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
             mGoogleApiClient.connect();
         }
     }
+
+    public void connectToGooglePlus(final ProgressDialog progressDialog) {
+        final Observable<Void> bookList = Observable.fromCallable(new Callable<Void>() {
+            @Override
+            public Void call() {
+                mGoogleApiClient = new GoogleApiClient.Builder(GooglePlusLogin.this).addConnectionCallbacks(GooglePlusLogin.this).addOnConnectionFailedListener(GooglePlusLogin.this).addApi(Plus.API, Plus.PlusOptions.builder().build()).addScope(Plus.SCOPE_PLUS_LOGIN).build();
+                mGoogleApiClient.connect();
+                return null;
+            }
+        });
+
+        Observable<Void> observable;
+        observable = bookList.subscribeOn(Schedulers.io());
+        observable.subscribe(new Observer<Void>() {
+            @Override
+            public void onCompleted() {
+                Log.d("connection", "onCompleted");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d("connection", "onError");
+                if (progressDialog != null && progressDialog.isShowing()) {
+                    progressDialog.dismiss();
+                }
+            }
+
+            @Override
+            public void onNext(@NonNull Void data) {
+                if (progressDialog != null && progressDialog.isShowing()) {
+                    progressDialog.dismiss();
+                }
+            }
+        });
+    }
+
+
 }

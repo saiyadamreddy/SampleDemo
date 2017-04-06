@@ -27,7 +27,7 @@ public class ServiceWorker {
     public static final String BASE_URL = "http://guidebook.com/";
 
     public void getItemList(final BookListPresenter presenter)  {
-        final Observable<ServiceDataModal> cardsList = Observable.fromCallable(new Callable<ServiceDataModal>() {
+        final Observable<ServiceDataModal> bookList = Observable.fromCallable(new Callable<ServiceDataModal>() {
             @Override
             public ServiceDataModal call() {
 
@@ -36,8 +36,7 @@ public class ServiceWorker {
         });
 
         Observable<ServiceDataModal> observable;
-        observable = cardsList.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
-        observable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+        observable = bookList.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
         observable.subscribe(new Observer<ServiceDataModal>() {
             @Override
             public void onCompleted() {
