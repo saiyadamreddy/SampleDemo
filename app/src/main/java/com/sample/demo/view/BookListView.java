@@ -10,9 +10,7 @@ import com.sample.demo.modal.ServiceDataModal;
 import com.sample.demo.presenter.BookListPresenter;
 import com.sample.demo.worker.ServiceWorker;
 
-/**
- * Created by Sai on 06-04-2017.
- */
+
 
 public class BookListView extends AppCompatActivity implements BookListPresenter {
     ProgressDialog progressDialog;
