@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -18,6 +19,7 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.plus.Plus;
 import com.sample.demo.R;
+import com.sample.demo.Utils.NetworkUtils;
 
 import java.util.concurrent.Callable;
 
@@ -44,6 +46,10 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
         setContentView(R.layout.signin);
         signinButton = (SignInButton) findViewById(R.id.sign_in_button);
         signinButton.setOnClickListener(this);
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, "Please check ur network connection", Toast.LENGTH_LONG).show();
+            return;
+        }
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Please wait..");
         progressDialog.show();
@@ -52,12 +58,16 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
     @Override
     protected void onResume() {
         super.onResume();
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, "Please check ur network connection", Toast.LENGTH_LONG).show();
+            return;
+        }
         connectToGooglePlus(progressDialog);
     }
 
     protected void onStop() {
         super.onStop();
-        if (mGoogleApiClient.isConnected()) {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
     }
@@ -135,6 +145,10 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.sign_in_button:
+                if (!NetworkUtils.isNetworkAvailable(this)) {
+                    Toast.makeText(this, "Please check ur network connection", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 googlePlusLogin();
                 break;
         }
@@ -142,16 +156,9 @@ public class GooglePlusLogin extends Activity implements OnClickListener, Connec
 
 
     private void googlePlusLogin() {
-        if (!mGoogleApiClient.isConnecting()) {
+        if (mGoogleApiClient != null && !mGoogleApiClient.isConnecting()) {
             signedInUser = true;
             resolveSignInError();
-        }
-    }
-
-    private void googlePlusLogout() {
-        if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-            mGoogleApiClient.connect();
         }
     }
 

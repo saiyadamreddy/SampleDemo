@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.sample.demo.R;
+import com.sample.demo.Utils.NetworkUtils;
 import com.sample.demo.adapter.BookListAdapter;
 import com.sample.demo.modal.Books;
 import com.sample.demo.modal.GlobaDataHolder;
@@ -55,9 +56,9 @@ public class BookListView extends AppCompatActivity {
         setContentView(R.layout.booklist);
         recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Please wait while books loading");
-        progressDialog.show();
-        if (isNetworkAvailable()) {
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            progressDialog.setMessage("Please wait while books loading");
+            progressDialog.show();
             ServiceWorker serviceWorker = new ServiceWorker();
             serviceWorker.getItemList(bookListPresenter);
         } else {
@@ -87,11 +88,5 @@ public class BookListView extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    //check network connection need to move to utils
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    }
+
 }
