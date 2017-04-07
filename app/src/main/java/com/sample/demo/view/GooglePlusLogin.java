@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -19,14 +18,11 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.plus.Plus;
 import com.sample.demo.R;
-import com.sample.demo.modal.ServiceDataModal;
-import com.sample.demo.presenter.BookListPresenter;
 
 import java.util.concurrent.Callable;
 
 import rx.Observable;
 import rx.Observer;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class GooglePlusLogin extends Activity implements OnClickListener, ConnectionCallbacks, OnConnectionFailedListener {

@@ -23,12 +23,19 @@ public class BookListAdapter extends
         RecyclerView.Adapter<BookListAdapter.VersionViewHolder> implements
         ItemTouchHelperAdapter {
 
-    private List<Books> productList = new ArrayList<Books>();
+    private List<Books> bookList = new ArrayList<Books>();
     private Context context;
+    private boolean isBookList;
 
-    public BookListAdapter(List<Books> productList, Context context) {
-        this.productList = productList;
+    public BookListAdapter(List<Books> booksList, Context context, boolean isBookList) {
+        this.bookList = booksList;
         this.context = context;
+        this.isBookList = isBookList;
+        if (!isBookList) {
+            this.bookList = GlobaDataHolder.getGlobaDataHolder().getShoppingList();
+        } else {
+            this.bookList = booksList;
+        }
     }
 
     @Override
@@ -40,17 +47,36 @@ public class BookListAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(final VersionViewHolder holder,
-                                 final int position) {
+    public void onBindViewHolder(final VersionViewHolder holder, final int position) {
 
-        holder.itemName.setText(productList.get(position).name);
+        holder.itemName.setText(bookList.get(position).name);
 
-        holder.startDate.setText(productList.get(position).startDate);
+        holder.startDate.setText(bookList.get(position).startDate);
 
-        holder.endDate.setText(productList.get(position).endDate);
-
-        Glide.with(context).load(productList.get(position).icon).placeholder(R.drawable.common_ic_googleplayservices)
+        holder.endDate.setText(bookList.get(position).endDate);
+        if (!isBookList) {
+            holder.quanitity.setText(bookList.get(position).getQuantity());
+        }
+        if (isBookList) {
+            holder.delete.setVisibility(View.GONE);
+            holder.addItem.setVisibility(View.VISIBLE);
+            holder.removeItem.setVisibility(View.VISIBLE);
+        } else {
+            holder.delete.setVisibility(View.VISIBLE);
+            holder.addItem.setVisibility(View.INVISIBLE);
+            holder.removeItem.setVisibility(View.INVISIBLE);
+        }
+        Glide.with(context).load(bookList.get(position).icon).placeholder(R.drawable.common_ic_googleplayservices)
                 .error(R.drawable.common_ic_googleplayservices).centerCrop().into(holder.imagView);
+
+        holder.delete.findViewById(R.id.delete).setOnClickListener(
+                new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        deleteItem(position, holder);
+                    }
+                }
+        );
 
         holder.addItem.findViewById(R.id.add_item).setOnClickListener(
                 new OnClickListener() {
@@ -58,7 +84,7 @@ public class BookListAdapter extends
                     @Override
                     public void onClick(View v) {
                         //current object
-                        Books tempObj = productList.get(position);
+                        Books tempObj = bookList.get(position);
                         //if current object is lready in shopping list
                         if (GlobaDataHolder.getGlobaDataHolder()
                                 .getShoppingList().contains(tempObj)) {
@@ -90,7 +116,7 @@ public class BookListAdapter extends
             @Override
             public void onClick(View v) {
 
-                Books tempObj = (productList).get(position);
+                Books tempObj = (bookList).get(position);
                 if (GlobaDataHolder.getGlobaDataHolder().getShoppingList()
                         .contains(tempObj)) {
                     int indexOfTempInShopingList = GlobaDataHolder
@@ -123,14 +149,14 @@ public class BookListAdapter extends
 
     @Override
     public int getItemCount() {
-        return productList == null ? 0 : productList.size();
+        return bookList == null ? 0 : bookList.size();
     }
 
     class VersionViewHolder extends RecyclerView.ViewHolder implements
             OnClickListener {
         TextView itemName, startDate, endDate, availability, quanitity,
                 addItem, removeItem;
-        ImageView imagView;
+        ImageView imagView, delete;
 
         public VersionViewHolder(View itemView) {
             super(itemView);
@@ -151,6 +177,8 @@ public class BookListAdapter extends
 
             removeItem = ((TextView) itemView.findViewById(R.id.remove_item));
 
+            delete = ((ImageView) itemView.findViewById(R.id.delete));
+
             itemView.setOnClickListener(this);
 
         }
@@ -166,7 +194,7 @@ public class BookListAdapter extends
 
     @Override
     public void onItemDismiss(int position) {
-        productList.remove(position);
+        bookList.remove(position);
         notifyItemRemoved(position);
     }
 
@@ -174,14 +202,19 @@ public class BookListAdapter extends
     public void onItemMove(int fromPosition, int toPosition) {
         if (fromPosition < toPosition) {
             for (int i = fromPosition; i < toPosition; i++) {
-                Collections.swap(productList, i, i + 1);
+                Collections.swap(bookList, i, i + 1);
             }
         } else {
             for (int i = fromPosition; i > toPosition; i--) {
-                Collections.swap(productList, i, i - 1);
+                Collections.swap(bookList, i, i - 1);
             }
         }
         notifyItemMoved(fromPosition, toPosition);
     }
 
+    private void deleteItem(int position, VersionViewHolder holder) {
+        bookList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, bookList.size());
+    }
 }
